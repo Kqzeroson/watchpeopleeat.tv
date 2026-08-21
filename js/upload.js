@@ -1,7 +1,6 @@
 // watchpeopleeat.tv — upload logic
 
 const MAX_FILE_BYTES = 500 * 1024 * 1024; // hard client-side ceiling before we even try to process
-const MAX_UPLOAD_BYTES = 45 * 1024 * 1024; // stay under Supabase's default project upload limit (~50MB)
 
 // quality presets for the ffmpeg pass: [height, crf] — lower crf = higher quality/bigger file
 const QUALITY_PRESETS = {
@@ -25,6 +24,53 @@ function getFFmpeg() {
 function formatBytes(bytes) {
   if (!bytes) return "0MB";
   return (bytes / (1024 * 1024)).toFixed(1) + "MB";
+}
+
+// Extract the project ref from SUPABASE_URL (e.g. "https://abcxyz.supabase.co" -> "abcxyz")
+// and use Supabase's direct storage hostname, which is faster/more reliable for large
+// chunked uploads than going through the general API host.
+function getResumableUploadEndpoint() {
+  const projectId = new URL(SUPABASE_URL).hostname.split(".")[0];
+  return `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`;
+}
+
+// Uploads a file to Supabase Storage in ~6MB chunks using the TUS resumable-upload
+// protocol, instead of one single request. This avoids hitting request-body size
+// limits on big files, and can retry/resume a chunk instead of failing the whole
+// upload if the connection drops partway through.
+function chunkedUpload({ file, bucketName, objectName, accessToken, onProgress }) {
+  return new Promise((resolve, reject) => {
+    const upload = new tus.Upload(file, {
+      endpoint: getResumableUploadEndpoint(),
+      retryDelays: [0, 3000, 5000, 10000, 20000],
+      chunkSize: 45 * 1024 * 1024, // 45MB per chunk
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        "x-upsert": "false",
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true,
+      metadata: {
+        bucketName,
+        objectName,
+        contentType: file.type || "video/mp4",
+        cacheControl: "3600",
+      },
+      onError: (err) => reject(err),
+      onProgress: (bytesUploaded, bytesTotal) => {
+        if (onProgress) onProgress(bytesUploaded, bytesTotal);
+      },
+      onSuccess: () => resolve(),
+    });
+
+    // resume a previous upload of this exact file if one was interrupted
+    upload.findPreviousUploads().then((previousUploads) => {
+      if (previousUploads.length) {
+        upload.resumeFromPreviousUpload(previousUploads[0]);
+      }
+      upload.start();
+    });
+  });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -153,8 +199,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    if (fileToUpload.size > MAX_UPLOAD_BYTES) {
-      msg.textContent = `file is still ${formatBytes(fileToUpload.size)} after processing — try a shorter trim or a lower quality setting (limit is ~${formatBytes(MAX_UPLOAD_BYTES)}).`;
+    if (fileToUpload.size > MAX_FILE_BYTES) {
+      msg.textContent = `file is still ${formatBytes(fileToUpload.size)} after processing — try a shorter trim or a lower quality setting.`;
       msg.className = "msg error";
       submitBtn.disabled = false;
       return;
@@ -163,18 +209,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     msg.textContent = "uploading video file…";
     msg.className = "msg";
 
+    const progressWrap = document.getElementById("upload-progress-wrap");
+    const progressBar = document.getElementById("upload-progress-bar");
+    const progressLabel = document.getElementById("upload-progress-label");
+    progressWrap.style.display = "block";
+    progressBar.style.width = "0%";
+    progressLabel.textContent = "";
+
     const storagePath = `${session.user.id}/${crypto.randomUUID()}.${uploadExt}`;
 
-    const { error: uploadError } = await supabaseClient.storage
-      .from("videos")
-      .upload(storagePath, fileToUpload, { cacheControl: "3600", upsert: false });
-
-    if (uploadError) {
-      msg.textContent = "upload failed: " + uploadError.message;
+    try {
+      await chunkedUpload({
+        file: fileToUpload,
+        bucketName: "videos",
+        objectName: storagePath,
+        accessToken: session.access_token,
+        onProgress: (uploaded, total) => {
+          const pct = total ? Math.round((uploaded / total) * 100) : 0;
+          progressBar.style.width = pct + "%";
+          progressLabel.textContent = `${pct}% (${formatBytes(uploaded)} / ${formatBytes(total)})`;
+        },
+      });
+    } catch (uploadError) {
+      msg.textContent = "upload failed: " + (uploadError.message || uploadError);
       msg.className = "msg error";
       submitBtn.disabled = false;
       return;
     }
+
+    progressLabel.textContent = "upload complete.";
 
     msg.textContent = "saving post…";
 

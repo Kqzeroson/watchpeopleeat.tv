@@ -65,13 +65,21 @@
       <div id="estimate-msg" style="font-family:var(--mono); font-size:12px; color:var(--dim);"></div>
     </div>
     <button type="submit" class="primary" id="submit-btn">upload</button>
+    <div id="upload-progress-wrap" style="display:none; margin-top:8px;">
+      <div style="background:var(--dim); border-radius:6px; overflow:hidden; height:8px;">
+        <div id="upload-progress-bar" style="background:var(--lime-dk); height:100%; width:0%; transition:width .2s;"></div>
+      </div>
+      <div id="upload-progress-label" style="font-family:var(--mono); font-size:11px; color:var(--dim); margin-top:4px;"></div>
+    </div>
     <div class="msg" id="form-msg"></div>
   </form>
 </div>
 
 <div class="footer">watchpeopleeat.tv</div>
 
+<script src="coi-serviceworker.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@latest/dist/tus.min.js"></script>
 <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/upload.js"></script>
