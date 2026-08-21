@@ -81,7 +81,19 @@ function attachHandlers() {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
       const currentlyBanned = btn.dataset.banned === "true";
-      await supabaseClient.from("profiles").update({ is_banned: !currentlyBanned }).eq("id", id);
+      const { error, data } = await supabaseClient
+        .from("profiles")
+        .update({ is_banned: !currentlyBanned })
+        .eq("id", id)
+        .select();
+      if (error) {
+        alert("could not update ban status: " + error.message);
+        return;
+      }
+      if (!data || data.length === 0) {
+        alert("update was blocked (no rows changed) — likely a permissions/RLS issue.");
+        return;
+      }
       renderAll();
     });
   });
