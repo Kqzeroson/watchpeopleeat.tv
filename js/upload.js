@@ -1,25 +1,6 @@
 // watchpeopleeat.tv — upload logic
 
-const MAX_FILE_BYTES = 500 * 1024 * 1024; // hard client-side ceiling before we even try to process
-
-// quality presets for the ffmpeg pass: [height, crf] — lower crf = higher quality/bigger file
-const QUALITY_PRESETS = {
-  high:   { height: 720, crf: 23 },
-  medium: { height: 720, crf: 30 },
-  low:    { height: 480, crf: 34 },
-};
-
-let ffmpeg = null;
-let ffmpegLoading = null;
-
-function getFFmpeg() {
-  if (!ffmpegLoading) {
-    const { createFFmpeg } = FFmpeg;
-    ffmpeg = createFFmpeg({ log: false });
-    ffmpegLoading = ffmpeg.load().then(() => ffmpeg);
-  }
-  return ffmpegLoading;
-}
+const MAX_FILE_BYTES = 500 * 1024 * 1024; // 500MB, matches storage bucket limit suggested in schema.sql
 
 function formatBytes(bytes) {
   if (!bytes) return "0MB";
@@ -34,7 +15,7 @@ function getResumableUploadEndpoint() {
   return `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`;
 }
 
-// Uploads a file to Supabase Storage in ~6MB chunks using the TUS resumable-upload
+// Uploads a file to Supabase Storage in chunks using the TUS resumable-upload
 // protocol, instead of one single request. This avoids hitting request-body size
 // limits on big files, and can retry/resume a chunk instead of failing the whole
 // upload if the connection drops partway through.
@@ -93,34 +74,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const fileInput = document.getElementById("video-file");
-  const processPanel = document.getElementById("process-panel");
-  const previewVideo = document.getElementById("preview-video");
-  const trimStart = document.getElementById("trim-start");
-  const trimEnd = document.getElementById("trim-end");
-  const trimDurationLabel = document.getElementById("trim-duration");
-  const qualitySelect = document.getElementById("compress-quality");
-  const estimateMsg = document.getElementById("estimate-msg");
-
-  let sourceDuration = 0;
-
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files[0];
-    estimateMsg.textContent = "";
-    if (!file) {
-      processPanel.style.display = "none";
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    previewVideo.src = url;
-    previewVideo.onloadedmetadata = () => {
-      sourceDuration = previewVideo.duration || 0;
-      trimStart.value = "0";
-      trimEnd.value = sourceDuration.toFixed(1);
-      trimDurationLabel.textContent = `/ full length: ${sourceDuration.toFixed(1)}s`;
-      estimateMsg.textContent = `original file: ${formatBytes(file.size)}`;
-    };
-    processPanel.style.display = "block";
-  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -129,83 +82,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const title = document.getElementById("title").value.trim();
     const description = document.getElementById("description").value.trim();
     const tagInput = document.getElementById("tags").value.trim();
-    const originalFile = fileInput.files[0];
+    const file = fileInput.files[0];
 
-    if (!originalFile) {
+    if (!file) {
       msg.textContent = "choose a video file first.";
       msg.className = "msg error";
       return;
     }
-    if (originalFile.size > MAX_FILE_BYTES) {
-      msg.textContent = "file is too large (max 500MB, even before trimming/compression).";
+    if (file.size > MAX_FILE_BYTES) {
+      msg.textContent = "file is too large (max 500MB).";
       msg.className = "msg error";
       return;
     }
 
     submitBtn.disabled = true;
-
-    const start = Math.max(0, parseFloat(trimStart.value) || 0);
-    const end = sourceDuration ? Math.min(sourceDuration, parseFloat(trimEnd.value) || sourceDuration) : null;
-    const quality = qualitySelect.value;
-    const isTrimmed = sourceDuration && (start > 0.05 || end < sourceDuration - 0.05);
-    const needsProcessing = isTrimmed || quality !== "original";
-
-    let fileToUpload = originalFile;
-    let uploadExt = originalFile.name.split(".").pop();
-
-    if (needsProcessing) {
-      try {
-        msg.textContent = "loading video processor (first time only, ~25MB)…";
-        msg.className = "msg";
-        const ff = await getFFmpeg();
-
-        msg.textContent = "trimming/compressing your video…";
-        const { fetchFile } = FFmpeg;
-        const inName = "input." + uploadExt;
-        ff.FS("writeFile", inName, await fetchFile(originalFile));
-
-        const args = ["-i", inName];
-        if (isTrimmed) {
-          args.push("-ss", String(start), "-to", String(end));
-        }
-        if (quality !== "original") {
-          const preset = QUALITY_PRESETS[quality];
-          args.push(
-            "-vf", `scale=-2:${preset.height}`,
-            "-c:v", "libx264", "-preset", "veryfast", "-crf", String(preset.crf),
-            "-c:a", "aac", "-b:a", "128k"
-          );
-        } else {
-          // trimmed only, no re-encode requested — but -ss/-to on some codecs needs a re-encode
-          // to cut on an exact boundary, so re-encode at a safe default quality.
-          args.push("-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-c:a", "aac", "-b:a", "160k");
-        }
-        args.push("out.mp4");
-
-        await ff.run(...args);
-        const data = ff.FS("readFile", "out.mp4");
-        fileToUpload = new File([data.buffer], "processed.mp4", { type: "video/mp4" });
-        uploadExt = "mp4";
-
-        // clean up ffmpeg's virtual filesystem
-        try { ff.FS("unlink", inName); ff.FS("unlink", "out.mp4"); } catch (_) {}
-
-        estimateMsg.textContent = `processed size: ${formatBytes(fileToUpload.size)} (was ${formatBytes(originalFile.size)})`;
-      } catch (procErr) {
-        msg.textContent = "could not process video: " + (procErr.message || procErr) + " — try uploading the original, or a shorter/smaller file.";
-        msg.className = "msg error";
-        submitBtn.disabled = false;
-        return;
-      }
-    }
-
-    if (fileToUpload.size > MAX_FILE_BYTES) {
-      msg.textContent = `file is still ${formatBytes(fileToUpload.size)} after processing — try a shorter trim or a lower quality setting.`;
-      msg.className = "msg error";
-      submitBtn.disabled = false;
-      return;
-    }
-
     msg.textContent = "uploading video file…";
     msg.className = "msg";
 
@@ -216,11 +106,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     progressBar.style.width = "0%";
     progressLabel.textContent = "";
 
-    const storagePath = `${session.user.id}/${crypto.randomUUID()}.${uploadExt}`;
+    const ext = file.name.split(".").pop();
+    const storagePath = `${session.user.id}/${crypto.randomUUID()}.${ext}`;
 
     try {
       await chunkedUpload({
-        file: fileToUpload,
+        file,
         bucketName: "videos",
         objectName: storagePath,
         accessToken: session.access_token,
@@ -238,7 +129,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     progressLabel.textContent = "upload complete.";
-
     msg.textContent = "saving post…";
 
     const { data: videoRow, error: insertError } = await supabaseClient
