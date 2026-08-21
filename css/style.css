@@ -23,9 +23,25 @@
   --orange-dk: #d9691a;
   --lime-dk: #85a30c;
   --red: #d64545;
+  --card: #ffffff;
   --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --display: "Fredoka", "Trebuchet MS", var(--sans);
   --mono: "IBM Plex Mono", "Courier New", monospace;
+}
+
+/* ---------- Dark theme ---------- */
+html[data-theme="dark"] {
+  --bg: #14140f;
+  --ink: #f1efe4;
+  --dim: #a8a596;
+  --line: #33322a;
+  --panel: #1d1c15;
+  --orange: #ff9a44;
+  --lime: #b9dd25;
+  --orange-dk: #ffb066;
+  --lime-dk: #cdea4d;
+  --red: #e8685f;
+  --card: #1b1a14;
 }
 
 * { box-sizing: border-box; }
@@ -38,6 +54,65 @@ html, body {
   font-family: var(--sans);
   font-size: 15px;
   line-height: 1.5;
+}
+
+/* smooth color swap whenever the theme changes */
+body, .topbar, .wrap, .tile, .panel-box, .comment, .eotw-banner,
+.livestream-card, table.admin-table th, table.admin-table td,
+input, textarea, select, button, .btn, .tag-pill {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+/* full-screen overlay used to fade the page out/in while the theme swaps */
+#theme-fade-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.28s ease;
+}
+#theme-fade-overlay.active { opacity: 1; }
+
+/* ---------- Theme toggle button ---------- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: #fff0;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+html[data-theme="dark"] .theme-toggle { border-color: var(--line); color: var(--ink); }
+.theme-toggle:hover { border-color: var(--orange); color: var(--orange-dk); }
+
+/* ---------- Side rails (decorative, wide viewports only) ---------- */
+.side-rail {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 210px;
+  background-image: url("images/side-strip.jpg");
+  background-repeat: repeat-y;
+  background-size: 210px auto;
+  opacity: 0.55;
+  z-index: -1;
+  filter: saturate(0.9);
+  transition: opacity 0.35s ease;
+}
+.side-rail.left { left: 0; }
+.side-rail.right { right: 0; }
+html[data-theme="dark"] .side-rail { opacity: 0.28; filter: saturate(0.7) brightness(0.75); }
+
+@media (max-width: 1500px) {
+  .side-rail { display: none; }
 }
 
 ::selection { background: var(--orange); color: #fff; }

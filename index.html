@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){try{var t=localStorage.getItem("wpe-theme");if(t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>watchpeopleeat.tv — /wpe/ board</title>
@@ -9,6 +10,8 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="side-rail left" aria-hidden="true"></div>
+<div class="side-rail right" aria-hidden="true"></div>
 
 <div class="topbar">
   <div class="brand">watchpeopleeat<span>.tv</span></div>
@@ -18,6 +21,7 @@
     <a href="eotw.html" class="eotw-link">EOTW</a>
     <a href="explore.html">Explore</a>
   </nav>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode">🌙</button>
   <div class="session" id="session-area">loading…</div>
 </div>
 
@@ -52,6 +56,7 @@
 
 <div class="footer">watchpeopleeat.tv — anonymous-ish video board. be funny, not cruel.</div>
 
+<script src="js/theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/eotw.js"></script>
