@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>watchpeopleeat.tv</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">watchpeopleeat<span>.tv</span></div>
+  <nav><a href="index.html">board</a><a href="upload.html">upload</a></nav>
+  <div class="session" id="session-area">loading…</div>
+</div>
+
+<div class="wrap" style="grid-template-columns: 1fr;">
+  <main style="max-width:780px; margin:0 auto; width:100%;">
+
+    <div class="video-stage" id="video-stage">loading video…</div>
+
+    <div class="video-header" id="video-header"></div>
+
+    <div class="reactions" id="reactions"></div>
+
+    <div class="tags-row" id="tags-row"></div>
+
+    <section class="comments">
+      <h3 style="font-family:var(--mono); color:var(--dim); font-size:12px; text-transform:uppercase;">comments</h3>
+
+      <div id="comment-form-area">
+        <textarea id="comment-input" rows="3" maxlength="2000" placeholder="write a comment…"></textarea>
+        <button id="comment-submit" class="primary">post comment</button>
+        <div class="msg" id="comment-msg"></div>
+      </div>
+
+      <div id="comment-list" style="margin-top:16px;"></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="footer">watchpeopleeat.tv</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/video.js"></script>
+</body>
+</html>

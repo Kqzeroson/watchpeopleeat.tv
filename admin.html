@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>admin — watchpeopleeat.tv</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">watchpeopleeat<span>.tv</span> <span style="color:var(--amber); font-size:12px;">/ admin</span></div>
+  <nav><a href="index.html">board</a><a href="upload.html">upload</a></nav>
+  <div class="session" id="session-area">loading…</div>
+</div>
+
+<div class="wrap" style="grid-template-columns: 1fr;">
+  <main id="admin-root">
+    <p style="font-family:var(--mono); color:var(--dim);">checking access…</p>
+  </main>
+</div>
+
+<div class="footer">watchpeopleeat.tv</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>watchpeopleeat.tv — /wpe/ board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">watchpeopleeat<span>.tv</span></div>
+  <nav>
+    <a href="index.html">board</a>
+    <a href="upload.html">upload</a>
+  </nav>
+  <div class="session" id="session-area">loading…</div>
+</div>
+
+<div class="wrap">
+  <main>
+    <div class="board-meta">
+      <span id="video-count">loading videos…</span>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="search-input" placeholder="search titles…">
+        <select id="sort-select">
+          <option value="new">Newest</option>
+          <option value="liked">Most Liked</option>
+          <option value="discussed">Most Discussed</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="catalog" id="catalog">
+      <!-- video tiles injected by js/board.js -->
+    </div>
+  </main>
+
+  <aside class="sidebar">
+    <h3>Tags</h3>
+    <div class="tag-cloud" id="tag-cloud">
+      <!-- tag pills injected by js/board.js -->
+    </div>
+  </aside>
+</div>
+
+<div class="footer">watchpeopleeat.tv — anonymous-ish video board. be funny, not cruel.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/board.js"></script>
+</body>
+</html>
