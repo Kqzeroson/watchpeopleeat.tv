@@ -20,7 +20,7 @@ async function requireAdmin() {
 }
 
 async function renderUsersTab() {
-  const { data: users } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+  const { data: users } = await supabaseClient.from("profiles").select("*").order("created_at", { ascending: false });
   const rows = (users || []).map(u => `
     <tr class="${u.is_banned ? "banned" : ""} ${u.is_admin ? "admin-row" : ""}">
       <td>${escapeHtml(u.username)}</td>
@@ -45,7 +45,7 @@ async function renderUsersTab() {
 }
 
 async function renderVideosTab() {
-  const { data: videos } = await supabase
+  const { data: videos } = await supabaseClient
     .from("videos")
     .select("*, profiles(username)")
     .order("created_at", { ascending: false });
@@ -81,7 +81,7 @@ function attachHandlers() {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
       const currentlyBanned = btn.dataset.banned === "true";
-      await supabase.from("profiles").update({ is_banned: !currentlyBanned }).eq("id", id);
+      await supabaseClient.from("profiles").update({ is_banned: !currentlyBanned }).eq("id", id);
       renderAll();
     });
   });
@@ -89,7 +89,7 @@ function attachHandlers() {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
       const currentlyRemoved = btn.dataset.removed === "true";
-      await supabase.from("videos").update({ is_removed: !currentlyRemoved }).eq("id", id);
+      await supabaseClient.from("videos").update({ is_removed: !currentlyRemoved }).eq("id", id);
       renderAll();
     });
   });
@@ -100,10 +100,10 @@ function attachHandlers() {
       const currentlyFeatured = btn.dataset.featured === "true";
       if (!currentlyFeatured) {
         // Only one active "Eater of the Week" at a time: clear any existing pick first.
-        await supabase.from("videos").update({ is_featured: false }).eq("is_featured", true);
-        await supabase.from("videos").update({ is_featured: true, featured_at: new Date().toISOString() }).eq("id", id);
+        await supabaseClient.from("videos").update({ is_featured: false }).eq("is_featured", true);
+        await supabaseClient.from("videos").update({ is_featured: true, featured_at: new Date().toISOString() }).eq("id", id);
       } else {
-        await supabase.from("videos").update({ is_featured: false }).eq("id", id);
+        await supabaseClient.from("videos").update({ is_featured: false }).eq("id", id);
       }
       renderAll();
     });

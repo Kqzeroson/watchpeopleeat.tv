@@ -6,7 +6,7 @@ async function renderEotwBanner() {
   const slot = document.getElementById("eotw-banner-slot");
   if (!slot) return;
 
-  const { data: video } = await supabase
+  const { data: video } = await supabaseClient
     .from("videos")
     .select("id, title, profiles(username)")
     .eq("is_featured", true)

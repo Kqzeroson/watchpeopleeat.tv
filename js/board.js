@@ -5,7 +5,7 @@ let searchTerm = "";
 let sortMode = "new";
 
 async function loadTagCloud() {
-  const { data: tags } = await supabase.from("tags").select("id, name").order("name");
+  const { data: tags } = await supabaseClient.from("tags").select("id, name").order("name");
   const el = document.getElementById("tag-cloud");
   if (!tags || tags.length === 0) {
     el.innerHTML = `<span style="color:var(--dim); font-family:var(--mono); font-size:11px;">no tags yet</span>`;
@@ -41,7 +41,7 @@ async function loadVideos() {
 
   let videoIds = null;
   if (activeTag) {
-    const { data: vt } = await supabase.from("video_tags").select("video_id").eq("tag_id", activeTag);
+    const { data: vt } = await supabaseClient.from("video_tags").select("video_id").eq("tag_id", activeTag);
     videoIds = (vt || []).map(r => r.video_id);
     if (videoIds.length === 0) {
       catalog.innerHTML = `<div style="font-family:var(--mono); color:var(--dim);">no videos with this tag yet.</div>`;
@@ -50,7 +50,7 @@ async function loadVideos() {
     }
   }
 
-  let query = supabase
+  let query = supabaseClient
     .from("videos")
     .select("id, title, storage_path, thumbnail_path, created_at, uploader_id, profiles(username)")
     .eq("is_removed", false);
@@ -73,8 +73,8 @@ async function loadVideos() {
   // pull reaction + comment counts for all visible videos in one shot each
   const ids = videos.map(v => v.id);
   const [{ data: reactions }, { data: comments }] = await Promise.all([
-    supabase.from("reactions").select("video_id, reaction").in("video_id", ids),
-    supabase.from("comments").select("video_id").in("video_id", ids).eq("is_removed", false),
+    supabaseClient.from("reactions").select("video_id, reaction").in("video_id", ids),
+    supabaseClient.from("comments").select("video_id").in("video_id", ids).eq("is_removed", false),
   ]);
 
   const counts = {};

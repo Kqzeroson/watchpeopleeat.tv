@@ -8,17 +8,17 @@
 const SUPABASE_URL = "https://nkxgtlelzmibueroefso.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5reGd0bGVsem1pYnVlcm9lZnNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzk2MzMsImV4cCI6MjEwMjg1NTYzM30.eNMieKKmnhwpKT5RMBpf_RGkzovzWRCSrR_0xM8XODQ";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ---- shared helpers used across pages ----
 
 async function getSession() {
-  const { data } = await supabase.auth.getSession();
+  const { data } = await supabaseClient.auth.getSession();
   return data.session;
 }
 
 async function getProfile(userId) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("profiles")
     .select("*")
     .eq("id", userId)

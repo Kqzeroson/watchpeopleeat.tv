@@ -16,7 +16,7 @@ async function renderLoggedOut() {
 async function renderLoggedIn(session, profile) {
   const root = document.getElementById("account-root");
 
-  const { data: myVideos } = await supabase
+  const { data: myVideos } = await supabaseClient
     .from("videos")
     .select("id, title, created_at, is_removed")
     .eq("uploader_id", session.user.id)
@@ -54,7 +54,7 @@ async function renderLoggedIn(session, profile) {
   `;
 
   document.getElementById("logout-btn").addEventListener("click", async () => {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     window.location.href = "index.html";
   });
 }

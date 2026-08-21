@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const ext = file.name.split(".").pop();
     const storagePath = `${session.user.id}/${crypto.randomUUID()}.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
       .from("videos")
       .upload(storagePath, file, { cacheControl: "3600", upsert: false });
 
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     msg.textContent = "saving post…";
 
-    const { data: videoRow, error: insertError } = await supabase
+    const { data: videoRow, error: insertError } = await supabaseClient
       .from("videos")
       .insert({
         uploader_id: session.user.id,
@@ -87,14 +87,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       .slice(0, 10);
 
     for (const name of tagNames) {
-      let { data: existingTag } = await supabase.from("tags").select("id").eq("name", name).maybeSingle();
+      let { data: existingTag } = await supabaseClient.from("tags").select("id").eq("name", name).maybeSingle();
       let tagId = existingTag?.id;
       if (!tagId) {
-        const { data: newTag, error: tagErr } = await supabase.from("tags").insert({ name }).select().single();
+        const { data: newTag, error: tagErr } = await supabaseClient.from("tags").insert({ name }).select().single();
         if (tagErr) continue;
         tagId = newTag.id;
       }
-      await supabase.from("video_tags").insert({ video_id: videoRow.id, tag_id: tagId });
+      await supabaseClient.from("video_tags").insert({ video_id: videoRow.id, tag_id: tagId });
     }
 
     msg.textContent = "uploaded! redirecting…";

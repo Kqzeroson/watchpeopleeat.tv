@@ -57,7 +57,7 @@ document.getElementById("register-form").addEventListener("submit", async (e) =>
   msg.textContent = "creating account…";
   msg.className = "msg";
 
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await supabaseClient.auth.signUp({
     email,
     password,
     options: { data: { username } }

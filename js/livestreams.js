@@ -66,7 +66,7 @@ async function renderPostForm() {
       msg.className = "msg error";
       return;
     }
-    const { error } = await supabase.from("livestreams").insert({
+    const { error } = await supabaseClient.from("livestreams").insert({
       host_id: session.user.id,
       title,
       embed_url: embedUrl,
@@ -87,7 +87,7 @@ async function renderPostForm() {
 
 async function loadStreams() {
   const el = document.getElementById("livestream-list");
-  const { data: streams, error } = await supabase
+  const { data: streams, error } = await supabaseClient
     .from("livestreams")
     .select("*, profiles(username)")
     .order("created_at", { ascending: false })

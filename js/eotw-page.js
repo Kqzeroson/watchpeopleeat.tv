@@ -2,7 +2,7 @@
 
 async function loadCurrentEotw() {
   const el = document.getElementById("eotw-current");
-  const { data: video } = await supabase
+  const { data: video } = await supabaseClient
     .from("videos")
     .select("id, title, description, storage_path, profiles(username)")
     .eq("is_featured", true)
@@ -14,7 +14,7 @@ async function loadCurrentEotw() {
     return;
   }
 
-  const { data: urlData } = supabase.storage.from("videos").getPublicUrl(video.storage_path);
+  const { data: urlData } = supabaseClient.storage.from("videos").getPublicUrl(video.storage_path);
   const uploader = video.profiles ? video.profiles.username : "anon";
 
   el.innerHTML = `
@@ -29,7 +29,7 @@ async function loadCurrentEotw() {
 
 async function loadHistory() {
   const el = document.getElementById("eotw-history");
-  const { data: videos } = await supabase
+  const { data: videos } = await supabaseClient
     .from("videos")
     .select("id, title, featured_at, profiles(username)")
     .not("featured_at", "is", null)

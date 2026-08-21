@@ -19,7 +19,7 @@ function thumbFallback(title) {
 }
 
 async function loadExploreTags() {
-  const { data: tags } = await supabase.from("tags").select("id, name").order("name");
+  const { data: tags } = await supabaseClient.from("tags").select("id, name").order("name");
   const el = document.getElementById("tag-cloud");
   if (!tags || tags.length === 0) {
     el.innerHTML = `<span style="color:var(--dim); font-family:var(--mono); font-size:11px;">no tags yet</span>`;
@@ -47,7 +47,7 @@ async function loadExploreVideos() {
 
   let videoIds = null;
   if (exploreActiveTag) {
-    const { data: vt } = await supabase.from("video_tags").select("video_id").eq("tag_id", exploreActiveTag);
+    const { data: vt } = await supabaseClient.from("video_tags").select("video_id").eq("tag_id", exploreActiveTag);
     videoIds = (vt || []).map(r => r.video_id);
     if (videoIds.length === 0) {
       catalog.innerHTML = `<div style="font-family:var(--mono); color:var(--dim);">no videos with this tag yet.</div>`;
@@ -56,7 +56,7 @@ async function loadExploreVideos() {
     }
   }
 
-  let query = supabase
+  let query = supabaseClient
     .from("videos")
     .select("id, title, created_at, profiles(username)")
     .eq("is_removed", false);

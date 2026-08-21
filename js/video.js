@@ -14,7 +14,7 @@ function greentextify(body) {
 }
 
 async function getPublicVideoUrl(storagePath) {
-  const { data } = supabase.storage.from("videos").getPublicUrl(storagePath);
+  const { data } = supabaseClient.storage.from("videos").getPublicUrl(storagePath);
   return data.publicUrl;
 }
 
@@ -24,7 +24,7 @@ async function loadVideo() {
     return;
   }
 
-  const { data: video, error } = await supabase
+  const { data: video, error } = await supabaseClient
     .from("videos")
     .select("*, profiles(username)")
     .eq("id", videoId)
@@ -52,7 +52,7 @@ async function loadVideo() {
 }
 
 async function loadTags(vid) {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from("video_tags")
     .select("tags(id, name)")
     .eq("video_id", vid);
@@ -64,7 +64,7 @@ async function loadTags(vid) {
 }
 
 async function loadReactions(vid) {
-  const { data: reactions } = await supabase.from("reactions").select("user_id, reaction").eq("video_id", vid);
+  const { data: reactions } = await supabaseClient.from("reactions").select("user_id, reaction").eq("video_id", vid);
   const likes = (reactions || []).filter(r => r.reaction === "like").length;
   const dislikes = (reactions || []).filter(r => r.reaction === "dislike").length;
   const mine = currentSession ? (reactions || []).find(r => r.user_id === currentSession.user.id) : null;
@@ -81,22 +81,22 @@ async function loadReactions(vid) {
 
 async function react(vid, type) {
   if (!currentSession) { window.location.href = "login.html"; return; }
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseClient
     .from("reactions").select("*")
     .eq("video_id", vid).eq("user_id", currentSession.user.id).maybeSingle();
 
   if (existing && existing.reaction === type) {
-    await supabase.from("reactions").delete().eq("video_id", vid).eq("user_id", currentSession.user.id);
+    await supabaseClient.from("reactions").delete().eq("video_id", vid).eq("user_id", currentSession.user.id);
   } else if (existing) {
-    await supabase.from("reactions").update({ reaction: type }).eq("video_id", vid).eq("user_id", currentSession.user.id);
+    await supabaseClient.from("reactions").update({ reaction: type }).eq("video_id", vid).eq("user_id", currentSession.user.id);
   } else {
-    await supabase.from("reactions").insert({ video_id: vid, user_id: currentSession.user.id, reaction: type });
+    await supabaseClient.from("reactions").insert({ video_id: vid, user_id: currentSession.user.id, reaction: type });
   }
   await loadReactions(vid);
 }
 
 async function loadComments(vid) {
-  const { data: comments, error } = await supabase
+  const { data: comments, error } = await supabaseClient
     .from("comments")
     .select("*, profiles(username, is_admin)")
     .eq("video_id", vid)
@@ -129,7 +129,7 @@ async function loadComments(vid) {
     btn.addEventListener("click", async (e) => {
       const commentEl = e.target.closest(".comment");
       const id = commentEl.dataset.commentId;
-      await supabase.from("comments").update({ is_removed: true }).eq("id", id);
+      await supabaseClient.from("comments").update({ is_removed: true }).eq("id", id);
       await loadComments(vid);
     });
   });
@@ -147,7 +147,7 @@ async function initCommentForm() {
     const msg = document.getElementById("comment-msg");
     const body = input.value.trim();
     if (!body) return;
-    const { error } = await supabase.from("comments").insert({
+    const { error } = await supabaseClient.from("comments").insert({
       video_id: videoId,
       user_id: currentSession.user.id,
       body,

@@ -52,7 +52,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
   msg.textContent = "logging in…";
   msg.className = "msg";
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
     msg.textContent = error.message;
@@ -62,7 +62,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 
   const profile = await getProfile(data.user.id);
   if (profile && profile.is_banned) {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     msg.textContent = "this account has been banned.";
     msg.className = "msg error";
     return;
