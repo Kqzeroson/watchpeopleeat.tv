@@ -89,7 +89,7 @@ async function loadStreams() {
   const el = document.getElementById("livestream-list");
   const { data: streams, error } = await supabaseClient
     .from("livestreams")
-    .select("*, profiles(username)")
+    .select("*, profiles!host_id(username)")
     .order("created_at", { ascending: false })
     .limit(20);
 

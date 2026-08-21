@@ -26,7 +26,7 @@ async function loadVideo() {
 
   const { data: video, error } = await supabaseClient
     .from("videos")
-    .select("*, profiles(username)")
+    .select("*, profiles!uploader_id(username)")
     .eq("id", videoId)
     .single();
 
@@ -98,7 +98,7 @@ async function react(vid, type) {
 async function loadComments(vid) {
   const { data: comments, error } = await supabaseClient
     .from("comments")
-    .select("*, profiles(username, is_admin)")
+    .select("*, profiles!user_id(username, is_admin)")
     .eq("video_id", vid)
     .eq("is_removed", false)
     .order("created_at", { ascending: true });

@@ -8,7 +8,7 @@ async function renderEotwBanner() {
 
   const { data: video } = await supabaseClient
     .from("videos")
-    .select("id, title, profiles(username)")
+    .select("id, title, profiles!uploader_id(username)")
     .eq("is_featured", true)
     .eq("is_removed", false)
     .maybeSingle();

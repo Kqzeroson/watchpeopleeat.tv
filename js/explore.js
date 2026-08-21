@@ -58,7 +58,7 @@ async function loadExploreVideos() {
 
   let query = supabaseClient
     .from("videos")
-    .select("id, title, created_at, profiles(username)")
+    .select("id, title, created_at, profiles!uploader_id(username)")
     .eq("is_removed", false);
   if (videoIds) query = query.in("id", videoIds);
 

@@ -52,7 +52,7 @@ async function loadVideos() {
 
   let query = supabaseClient
     .from("videos")
-    .select("id, title, storage_path, thumbnail_path, created_at, uploader_id, profiles(username)")
+    .select("id, title, storage_path, thumbnail_path, created_at, uploader_id, profiles!uploader_id(username)")
     .eq("is_removed", false);
 
   if (videoIds) query = query.in("id", videoIds);

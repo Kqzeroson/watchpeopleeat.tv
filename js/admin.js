@@ -47,7 +47,7 @@ async function renderUsersTab() {
 async function renderVideosTab() {
   const { data: videos } = await supabaseClient
     .from("videos")
-    .select("*, profiles(username)")
+    .select("*, profiles!uploader_id(username)")
     .order("created_at", { ascending: false });
 
   const rows = (videos || []).map(v => `

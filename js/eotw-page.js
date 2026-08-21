@@ -4,7 +4,7 @@ async function loadCurrentEotw() {
   const el = document.getElementById("eotw-current");
   const { data: video } = await supabaseClient
     .from("videos")
-    .select("id, title, description, storage_path, profiles(username)")
+    .select("id, title, description, storage_path, profiles!uploader_id(username)")
     .eq("is_featured", true)
     .eq("is_removed", false)
     .maybeSingle();
@@ -31,7 +31,7 @@ async function loadHistory() {
   const el = document.getElementById("eotw-history");
   const { data: videos } = await supabaseClient
     .from("videos")
-    .select("id, title, featured_at, profiles(username)")
+    .select("id, title, featured_at, profiles!uploader_id(username)")
     .not("featured_at", "is", null)
     .eq("is_removed", false)
     .order("featured_at", { ascending: false });
