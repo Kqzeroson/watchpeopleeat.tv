@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>admin — watchpeopleeat.tv</title>
+<title>Eater of the Week — watchpeopleeat.tv</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -14,15 +14,23 @@
   <nav>
     <a href="livestreams.html">Livestreams</a>
     <a href="index.html">Videos</a>
-    <a href="eotw.html" class="eotw-link">EOTW</a>
+    <a href="eotw.html" class="eotw-link active">EOTW</a>
     <a href="explore.html">Explore</a>
   </nav>
   <div class="session" id="session-area">loading…</div>
 </div>
 
 <div class="wrap" style="grid-template-columns: 1fr;">
-  <main id="admin-root">
-    <p style="font-family:var(--mono); color:var(--dim);">checking access…</p>
+  <main style="max-width:780px; margin:0 auto; width:100%;">
+    <h1 style="font-family:var(--display); font-size:24px;">🏆 Eater of the Week</h1>
+    <p style="color:var(--dim); font-size:14px;">
+      The current pick, chosen by admins, and everyone who's held the title before.
+    </p>
+
+    <div id="eotw-current"></div>
+
+    <h3 style="font-family:var(--display); color:var(--dim); font-size:15px; margin-top:30px;">Past winners</h3>
+    <div id="eotw-history"></div>
   </main>
 </div>
 
@@ -30,6 +38,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js"></script>
-<script src="js/admin.js"></script>
+<script src="js/eotw-page.js"></script>
 </body>
 </html>

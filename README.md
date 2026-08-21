@@ -63,13 +63,36 @@ admins:
 
 | File | Purpose |
 |---|---|
-| `index.html` / `js/board.js` | Board/catalog view, tag filter, sort, search |
+| `index.html` / `js/board.js` | Video catalog, tag filter, sort, search, EOTW banner |
+| `explore.html` / `js/explore.js` | Shuffled discovery view of all videos |
+| `eotw.html` / `js/eotw-page.js` | Current "Eater of the Week" pick + past winners |
+| `livestreams.html` / `js/livestreams.js` | Post/view livestream announcements (see note below) |
 | `upload.html` / `js/upload.js` | Upload a video file + title/description/tags |
 | `video.html` / `js/video.js` | Video player, tags, like/dislike, comments |
+| `account.html` / `js/account.js` | Profile info, your uploads, log out |
 | `login.html`, `register.html` | Auth pages (Supabase-backed) |
-| `admin.html` / `js/admin.js` | Ban/unban users, remove/restore videos |
+| `admin.html` / `js/admin.js` | Ban/unban users, remove/restore videos, set EOTW |
 | `supabase/schema.sql` | Full DB schema + row-level security policies |
 | `js/supabase-client.js` | Where you paste your project URL/key |
+
+### About "Livestreams"
+
+Neither GitHub Pages nor Supabase's free tier can ingest an actual live video
+signal (that needs an RTMP server + transcoding, which is its own paid
+service). So this page works as an **announcement board**: a logged-in user
+pastes a YouTube Live or Twitch URL for a stream they're already running
+elsewhere, and the site embeds it via `<iframe>`. If you later want a stream
+truly hosted on watchpeopleeat.tv itself, that would mean adding a service
+like Mux, Cloudflare Stream, or a Twitch/YouTube-only workflow on top of what's
+here.
+
+### About "EOTW" (Eater of the Week)
+
+`videos.is_featured` marks the current pick; only one video can hold it at a
+time (setting a new one automatically clears the old one). `videos.featured_at`
+records when a video became EOTW, which is what populates the history list on
+`eotw.html`. Admins set this from the admin panel — there's no automatic
+weekly rotation, so it's a manual "crown someone" action.
 
 ## Notes on moderation
 

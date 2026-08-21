@@ -32,7 +32,7 @@ async function renderTopbarSession() {
   if (!el) return;
   const session = await getSession();
   if (!session) {
-    el.innerHTML = `<a href="login.html">log in</a><a href="register.html">register</a>`;
+    el.innerHTML = `<a href="account.html" class="my-account-pill">My Account</a>`;
     return;
   }
   const profile = await getProfile(session.user.id);
@@ -41,18 +41,8 @@ async function renderTopbarSession() {
   if (profile && profile.is_admin) {
     adminLink = `<a href="admin.html">admin</a>`;
   }
-  el.innerHTML = `logged in as <strong style="color:var(--amber)">${escapeHtml(name)}</strong>
-    ${adminLink}
-    <a href="upload.html">upload</a>
-    <a href="#" id="logout-link">log out</a>`;
-  const logoutLink = document.getElementById("logout-link");
-  if (logoutLink) {
-    logoutLink.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await supabase.auth.signOut();
-      window.location.href = "index.html";
-    });
-  }
+  el.innerHTML = `${adminLink}
+    <a href="account.html" class="my-account-pill">${escapeHtml(name)}</a>`;
 }
 
 function escapeHtml(str) {

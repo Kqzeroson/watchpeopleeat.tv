@@ -47,6 +47,8 @@ create table if not exists videos (
   storage_path text not null,          -- path inside the "videos" storage bucket
   thumbnail_path text,                 -- optional path inside "thumbnails" bucket
   is_removed boolean not null default false,
+  is_featured boolean not null default false,  -- current "Eater of the Week" pick
+  featured_at timestamptz,                      -- when it was made EOTW, for the winners history
   created_at timestamptz not null default now()
 );
 
@@ -147,6 +149,42 @@ create policy "users can change their own reaction"
 
 create policy "users can remove their own reaction"
   on reactions for delete using (auth.uid() = user_id);
+
+-- ============================================================
+-- LIVESTREAMS
+-- No RTMP/live ingest runs on GitHub Pages or Supabase's free tier, so this
+-- table stores *announcements*: a user posts a title + an embed URL for a
+-- stream they're already running elsewhere (YouTube Live, Twitch, etc.),
+-- and the page embeds it. See livestreams.html.
+-- ============================================================
+create table if not exists livestreams (
+  id uuid primary key default gen_random_uuid(),
+  host_id uuid references profiles(id) on delete cascade not null,
+  title text not null,
+  embed_url text not null,             -- an embeddable URL (YouTube "/embed/...", Twitch player URL, etc.)
+  is_live boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table livestreams enable row level security;
+
+create policy "livestreams are publicly viewable"
+  on livestreams for select using (true);
+
+create policy "logged in users can post a livestream"
+  on livestreams for insert with check (auth.uid() = host_id);
+
+create policy "hosts and admins can update livestreams"
+  on livestreams for update using (
+    auth.uid() = host_id
+    or exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
+
+create policy "hosts and admins can delete livestreams"
+  on livestreams for delete using (
+    auth.uid() = host_id
+    or exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
 
 -- ============================================================
 -- STORAGE BUCKETS

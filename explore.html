@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>admin — watchpeopleeat.tv</title>
+<title>Explore — watchpeopleeat.tv</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -15,21 +15,31 @@
     <a href="livestreams.html">Livestreams</a>
     <a href="index.html">Videos</a>
     <a href="eotw.html" class="eotw-link">EOTW</a>
-    <a href="explore.html">Explore</a>
+    <a href="explore.html" class="active">Explore</a>
   </nav>
   <div class="session" id="session-area">loading…</div>
 </div>
 
-<div class="wrap" style="grid-template-columns: 1fr;">
-  <main id="admin-root">
-    <p style="font-family:var(--mono); color:var(--dim);">checking access…</p>
+<div class="wrap">
+  <main>
+    <div class="board-meta">
+      <span id="video-count">shuffling…</span>
+      <button id="shuffle-btn" class="secondary">🔀 shuffle again</button>
+    </div>
+
+    <div class="catalog" id="catalog"></div>
   </main>
+
+  <aside class="sidebar">
+    <h3>Tags</h3>
+    <div class="tag-cloud" id="tag-cloud"></div>
+  </aside>
 </div>
 
 <div class="footer">watchpeopleeat.tv</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js"></script>
-<script src="js/admin.js"></script>
+<script src="js/explore.js"></script>
 </body>
 </html>

@@ -51,14 +51,17 @@ async function renderVideosTab() {
     .order("created_at", { ascending: false });
 
   const rows = (videos || []).map(v => `
-    <tr class="${v.is_removed ? "banned" : ""}">
-      <td><a href="video.html?id=${v.id}">${escapeHtml(v.title)}</a></td>
+    <tr class="${v.is_removed ? "banned" : ""} ${v.is_featured ? "featured-row" : ""}">
+      <td><a href="video.html?id=${v.id}">${escapeHtml(v.title)}</a> ${v.is_featured ? "🏆" : ""}</td>
       <td>${escapeHtml(v.profiles ? v.profiles.username : "anon")}</td>
       <td>${v.is_removed ? "removed" : "live"}</td>
       <td>${timeAgo(v.created_at)}</td>
       <td>
         <button class="video-toggle" data-id="${v.id}" data-removed="${v.is_removed}">
           ${v.is_removed ? "restore" : "remove"}
+        </button>
+        <button class="eotw-toggle" data-id="${v.id}" data-featured="${v.is_featured}">
+          ${v.is_featured ? "unset EOTW" : "set as EOTW"}
         </button>
       </td>
     </tr>
@@ -87,6 +90,21 @@ function attachHandlers() {
       const id = btn.dataset.id;
       const currentlyRemoved = btn.dataset.removed === "true";
       await supabase.from("videos").update({ is_removed: !currentlyRemoved }).eq("id", id);
+      renderAll();
+    });
+  });
+
+  document.querySelectorAll(".eotw-toggle").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const currentlyFeatured = btn.dataset.featured === "true";
+      if (!currentlyFeatured) {
+        // Only one active "Eater of the Week" at a time: clear any existing pick first.
+        await supabase.from("videos").update({ is_featured: false }).eq("is_featured", true);
+        await supabase.from("videos").update({ is_featured: true, featured_at: new Date().toISOString() }).eq("id", id);
+      } else {
+        await supabase.from("videos").update({ is_featured: false }).eq("id", id);
+      }
       renderAll();
     });
   });
